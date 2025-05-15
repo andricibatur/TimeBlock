@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Antrian Pekerjaan</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#4CAF50"/>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f4f4f4; }
+    h2 { text-align: center; }
+    .task { background: #fff; border: 1px solid #ccc; padding: 12px; margin-bottom: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; transition: transform 0.3s ease; position: relative; }
+    .task.done { background-color: #d1ffd1; text-decoration: line-through; }
+    .task input[type="text"], .task input[type="time"] { border: none; background: transparent; width: 100px; }
+    .task input[type="text"]:focus, .task input[type="time"]:focus { background: #eef; outline: none; }
+    .left { flex-grow: 1; }
+    .right { display: flex; gap: 10px; align-items: center; }
+  </style>
+</head>
+<body>
+  <h2>Antrian Pekerjaan (10 Track)</h2>
+  <div id="taskList"></div>
+
+  <script>
+    const taskList = document.getElementById('taskList');
+    const tasks = Array.from({ length: 10 }, (_, i) => ({
+      id: i + 1, name: `Pekerjaan ${i + 1}`, startTime: "08:00", endTime: "12:00", done: false
+    }));
+
+    function renderTasks() {
+      taskList.innerHTML = '';
+      const now = new Date().toTimeString().slice(0, 5);
+      tasks.forEach(task => {
+        const div = document.createElement('div');
+        div.className = 'task' + (task.done ? ' done' : '');
+        if (task.startTime === now) div.style.background = '#ffaaaa';
+        div.innerHTML = `
+          <div class="left">
+            <input type="text" value="${task.name}" onchange="updateTask(${task.id}, 'name', this.value)">
+          </div>
+          <div class="right">
+            <input type="time" value="${task.startTime}" onchange="updateTask(${task.id}, 'startTime', this.value)">
+            <input type="time" value="${task.endTime}" onchange="updateTask(${task.id}, 'endTime', this.value)">
+            <label><input type="checkbox" ${task.done ? 'checked' : ''} onchange="toggleDone(${task.id})"> Selesai</label>
+          </div>
+        `;
+        taskList.appendChild(div);
+      });
+    }
+
+    function updateTask(id, key, value) {
+      const task = tasks.find(t => t.id === id);
+      if (task) { task[key] = value; renderTasks(); }
+    }
+
+    function toggleDone(id) {
+      const task = tasks.find(t => t.id === id);
+      if (task) { task.done = !task.done; renderTasks(); }
+    }
+
+    setInterval(renderTasks, 1000);
+    renderTasks();
+  </script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js');
+      });
+    }
+  </script>
+</body>
+</html>
